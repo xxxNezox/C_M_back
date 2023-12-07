@@ -1,6 +1,6 @@
 import requests
 
-url = 'http://localhost:5001/auth/hello'
+url = 'http://localhost:5001/sample/hello'
 
 # Данные формы
 form_data = {
