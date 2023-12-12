@@ -6,9 +6,9 @@ API_URL = 'http://localhost:5001/auth/registration'
 def test_registration():
     # Замените на актуальные данные для регистрации
     data = {
-        'email': 't823@example.com',
-        'username': 'test32user123',
-        'password': 'testprdFasdf138'
+        'email': '12385daksdh@fhskjfd.ru',
+        'username': '1235asdaskjdka',
+        'password': 'sdaAKJS34289'
     }
 
     # Отправляем запрос на регистрацию
