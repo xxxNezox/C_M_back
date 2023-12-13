@@ -1,4 +1,4 @@
-function validateLogin(email, username, password) {
+function validateLogin(email, username , password) {
   const usernameRegex = /^[a-zA-Z0-9_-]{3,16}$/;
 
   const isLengthValid = password.length >= 6;
