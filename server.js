@@ -12,7 +12,7 @@ const port = process.env.API_PORT;
 app.use(express.urlencoded({ extended: false }));
 app.use(cors());
 
-// подключаем раздел аунтефикации
+// routes
 app.use('/auth', auth)
 app.use('/sample', sample_routes);
 

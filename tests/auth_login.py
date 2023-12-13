@@ -1,9 +1,8 @@
 import requests
 
-url = 'http://localhost:5001/auth/registration'
+url = 'http://localhost:5001/auth/login'
 
 data = {
-    'email': input('email: '),
     'username': input('username: '),
     'password': input('password: ')
 }

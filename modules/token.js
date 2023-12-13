@@ -7,62 +7,65 @@ class Token {
         this.secretKey = process.env.SECRET_KEY;
     }
 
-    // Получение user_id по username
-    async getUserIdByUsername(username) {
+    async _getUserIdByUsername(username) {
         const client = await pool.connect();
-        const selectQuery = 'SELECT user_id FROM Users WHERE username = $1';
+        const selectQuery = `SELECT user_id FROM Users WHERE username = $1`;
         const result = await client.query(selectQuery, [username]);
 
         if (result.rows.length > 0) {
             return result.rows[0].user_id;
         }
 
-        return null; // Возвращаем null, если пользователь не найден
+        return false;
     }
 
-    // Создание токена по username
     async createToken(username) {
-        const user_id = await this.getUserIdByUsername(username);
+        const user_id = await this._getUserIdByUsername(username);
 
         if (!user_id) {
-            return null; // Возвращаем null, если пользователь не найден
+            return false;
         }
 
         const token = jwt.sign({ user_id }, this.secretKey, { expiresIn: '1h' });
 
-        const sessionInsertQuery = 'INSERT INTO Sessions(user_id, token, refresh_time) VALUES ($1, $2, NOW())';
+        const insertQuery = `INSERT INTO Sessions(user_id, token, refresh_time) VALUES ($1, $2, NOW())`;
         const client = await pool.connect();
-        await client.query(sessionInsertQuery, [user_id, token]);
+        await client.query(insertQuery, [user_id, token]);
 
         return token;
     }
 
-    // Обновление токена по username
-    async refreshToken(username) {
-        const user_id = await this.getUserIdByUsername(username);
-
-        if (!user_id) {
-            return null; // Возвращаем null, если пользователь не найден
-        }
-
-        const token = jwt.sign({ user_id }, this.secretKey, { expiresIn: '1h' });
-
-        const updateQuery = 'UPDATE Sessions SET refresh_time = NOW() WHERE user_id = $1';
+    async isTokenValid(token) {
         const client = await pool.connect();
-        await client.query(updateQuery, [user_id]);
-
-        return token;
-    }
-
-    // Удаление токена по username (выход из системы)
-    async deleteToken(username) {
-        const user_id = await this.getUserIdByUsername(username);
-
-        if (user_id) {
-            const deleteQuery = 'DELETE FROM Sessions WHERE user_id = $1';
-            const client = await pool.connect();
-            await client.query(deleteQuery, [user_id]);
+        const selectQuery = `SELECT refresh_time FROM Sessions WHERE token = $1`;
+        const result = await client.query(selectQuery, [token]);
+    
+        if (result.rows.length > 0) {
+            const refreshTime = new Date(result.rows[0].refresh_time); 
+            const currentTime = new Date();
+            const deltaTime = currentTime - refreshTime;
+    
+            // токен действителен не более 1 часа
+            const maxTokenAge = 1 * 60 * 60 * 1000; 
+    
+            return deltaTime <= maxTokenAge;
         }
+    
+        return false;
+    }
+    
+    async refreshToken(token) {
+        const updateQuery = `UPDATE Sessions SET refresh_time = NOW() WHERE token = $1`;
+        const client = await pool.connect();
+        await client.query(updateQuery, [token]);
+    
+        return true;
+    }
+    
+    async deleteToken(token) {
+        const deleteQuery = `DELETE FROM Sessions WHERE token = $1`;
+        const client = await pool.connect();
+        await client.query(deleteQuery, [token]);
     }
 }
 
