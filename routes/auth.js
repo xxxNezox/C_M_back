@@ -35,7 +35,7 @@ router.post('/registration', async (req, res) => {
             END AS status;
     `;
 
-    const insertQuery = `INSERT INTO Users(username, email, password) VALUES ($1, $2, $3) RETURNING *`;
+    const insertQuery = `INSERT INTO Users(email, username, password) VALUES ($1, $2, $3) RETURNING *`;
 
     const client = await pool.connect();
     try {
@@ -65,31 +65,6 @@ router.post('/registration', async (req, res) => {
         res.status(500).json({ error: error.message});
     }
 });
-
-/*
-router.post('/login', async (req, res) => {
-
-    const {username, password} = req.body;
-
-    if (!validateLogin(username, password)){
-        return res.status(400).json({error: 'Ошибка валидации. Проверьте введенные данные.'});
-    }
-
-    const selectQuery = `SELECT * FROM users WHERE email ='${username}' and password='${password}'`
-
-    const clien = await pool.connect();
-    try {
-        await clien.query('BEGIN');
-
-        const result = await clien.query(selectQuery, [username, password]);
-        console.log({result})
-
-    } catch (error) {
-        console.error('Ошибка логина пользователя')
-        res.status(500).json({error: 'Ошибка логина пользователя'})
-    }
-});
-*/
 
 //моя реализация логина:
 router.post('/login', async (req, res) => {
